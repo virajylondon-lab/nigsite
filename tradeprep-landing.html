@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TradePrep — Practice trading before you risk anything</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F1F3EE;
+    --ink: #10201F;
+    --ink-soft: #556661;
+    --line: #D3DAD1;
+    --card: #FFFFFF;
+    --accent: #B5721E;
+    --up: #3E8E77;
+    --down: #B24B3E;
+    --radius: 5px;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1817; --ink: #F1EFE6; --ink-soft: #8FA39D;
+      --line: #1F3733; --card: #122321; --accent: #E8A33D;
+      --up: #4FAE8E; --down: #C1554A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1817; --ink: #F1EFE6; --ink-soft: #8FA39D;
+    --line: #1F3733; --card: #122321; --accent: #E8A33D;
+    --up: #4FAE8E; --down: #C1554A;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden; position: relative;
+  }
+  /* Subtle grain so flat color fields don't look like a flat AI gradient */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    opacity: 0.035; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
+
+  header.top {
+    display: flex; align-items: center; padding: 28px 24px;
+    max-width: 860px; margin: 0 auto; padding-top: calc(28px + env(safe-area-inset-top, 0px));
+    position: relative; z-index: 2;
+  }
+
+  .hero-grid { display: grid; grid-template-columns: 1fr; gap: 36px; align-items: start; }
+
+  .icon-badge {
+    width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+    background: var(--card); border: 1.5px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-soft); transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .icon-badge svg { width: 21px; height: 21px; }
+  .row-item:hover .icon-badge { color: var(--accent); border-color: var(--accent); }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.01em; }
+  .motto {
+    font-size: 0.74rem; color: var(--ink-soft); font-weight: 500;
+    padding-left: 12px; margin-left: 4px; border-left: 1.5px solid var(--line);
+  }
+  @media (max-width: 480px) { .motto { display: none; } }
+  .logo .bar { transform-origin: bottom; animation: growBar 0.6s cubic-bezier(.2,.8,.3,1) backwards; }
+  .logo .bar.b2 { animation-delay: 0.15s; }
+  @keyframes growBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal-in { animation: fadeUp 0.6s cubic-bezier(.2,.7,.3,1) backwards; }
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.55s ease, transform 0.55s ease; }
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .logo .bar, .reveal-in { animation: none; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  .hero { padding: 44px 0 8px; }
+  .hero h1 {
+    font-size: clamp(2.3rem, 6.6vw, 3.6rem); line-height: 1.04; font-weight: 700;
+    letter-spacing: -0.028em; margin: 0 0 20px; max-width: 14ch;
+  }
+  .hero p.sub { font-size: 1.1rem; line-height: 1.58; color: var(--ink-soft); max-width: 46ch; margin: 0 0 28px; }
+  .hero p.sub strong { color: var(--ink); font-weight: 600; }
+
+  .topics { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; }
+  .topic-chip {
+    font-size: 0.82rem; padding: 7px 13px; border-radius: 999px;
+    border: 1.5px solid var(--line); color: var(--ink-soft); background: var(--card);
+    transition: border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+  }
+  .topic-chip:hover { border-color: var(--accent); color: var(--ink); transform: translateY(-2px); }
+  .topic-chip.more { border-style: dashed; background: transparent; font-style: italic; }
+
+  form.signup { display: flex; gap: 10px; flex-wrap: wrap; max-width: 460px; margin: 0 0 10px; }
+  input[type="email"] {
+    flex: 1 1 220px; padding: 14px 16px; border-radius: var(--radius);
+    border: 1.5px solid var(--line); background: var(--card); color: var(--ink);
+    font-family: inherit; font-size: 1rem;
+  }
+  input[type="email"]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  input[type="email"]::placeholder { font-size: 0.88em; }
+  button.cta {
+    padding: 14px 22px; border-radius: var(--radius); border: none; background: var(--accent);
+    color: #1A1206; font-family: inherit; font-weight: 600; font-size: 1rem; cursor: pointer;
+  }
+  button.cta:hover { filter: brightness(1.08); }
+  button.cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  button.cta:disabled { opacity: 0.6; cursor: default; }
+  p.microcopy { font-size: 0.85rem; color: var(--ink-soft); margin: 0 0 48px; }
+
+  .success { max-width: 460px; padding: 22px; border-radius: var(--radius); background: var(--card); border: 1.5px solid var(--line); margin-bottom: 48px; }
+  .success h3 { margin: 0 0 8px; font-size: 1.15rem; }
+  .success p { margin: 0 0 16px; color: var(--ink-soft); line-height: 1.5; font-size: 0.95rem; }
+  .success .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-secondary, .btn-ghost { display: inline-block; padding: 10px 16px; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; text-decoration: none; font-family: inherit; }
+  .btn-secondary { background: var(--up); color: #06201A; }
+  .btn-ghost { border: 1.5px solid var(--line); color: var(--ink); }
+
+  .ticker-list { border-top: 1.5px solid var(--line); }
+  .row-item { display: flex; gap: 20px; align-items: flex-start; padding: 26px 0; border-bottom: 1.5px solid var(--line); }
+  .row-item h4 { margin: 4px 0 6px; font-size: 1.13rem; font-weight: 600; }
+  .row-item p { margin: 0; color: var(--ink-soft); font-size: 0.95rem; line-height: 1.5; max-width: 48ch; }
+
+  footer { padding: 40px 0 48px; border-top: 1.5px solid var(--line); margin-top: 20px; }
+  footer p { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.6; max-width: 60ch; margin: 0 0 10px; }
+  footer a { color: var(--ink-soft); }
+
+  @media (max-width: 480px) {
+    header.top { padding: 20px; padding-top: calc(20px + env(safe-area-inset-top, 0px)); }
+    .wrap { padding-left: 20px; padding-right: 20px; }
+    form.signup { flex-wrap: nowrap; gap: 8px; }
+    input[type="email"] { flex: 1 1 0; min-width: 0; padding: 11px 12px; font-size: 16px; }
+    button.cta { width: auto; flex-shrink: 0; padding: 11px 14px; font-size: 0.92rem; }
+    .success { padding: 16px; }
+    .success h3 { font-size: 1.05rem; }
+  }
+
+  @media (min-width: 960px) {
+    .wrap, header.top { max-width: 1120px; }
+    .hero { padding-top: 64px; }
+    .hero h1 { font-size: clamp(3.4rem, 5.2vw, 4.6rem); max-width: 15ch; margin-bottom: 26px; }
+    .hero p.sub { font-size: 1.25rem; max-width: 52ch; margin-bottom: 36px; }
+    .topics { margin-bottom: 44px; }
+    form.signup { max-width: 540px; }
+    input[type="email"], button.cta { padding-top: 16px; padding-bottom: 16px; }
+    .success { max-width: 540px; }
+    .ticker-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 64px; }
+    .row-item { padding: 32px 0; }
+    .row-item h4 { font-size: 1.25rem; }
+    .row-item p { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">
+    <svg width="18" height="18" viewBox="0 0 18 18"><rect class="bar b1" x="3" y="2" width="3" height="14" rx="1" fill="var(--up)"/><rect class="bar b2" x="11" y="6" width="3" height="8" rx="1" fill="var(--down)"/></svg>
+    TradePrep
+  </div>
+  <span class="motto">for beginner day &amp; swing traders</span>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="hero-top">
+        <h1 class="reveal-in" style="animation-delay:0.05s">Actually learn how to trade — right from your phone.</h1>
+        <p class="sub reveal-in" style="animation-delay:0.15s"><strong>Stop guessing the markets.</strong> TradePrep teaches you the fundamentals of price action and market structure in short lessons, then lets you practice what you learn with a built-in backtester and risk-free paper trading — no finance background, no desktop software, no real money.</p>
+
+        <div class="topics reveal-in" style="animation-delay:0.25s">
+          <span class="topic-chip">Market Structure</span>
+          <span class="topic-chip">Liquidity Sweeps</span>
+          <span class="topic-chip">Order Blocks</span>
+          <span class="topic-chip">Candlestick Patterns</span>
+          <span class="topic-chip">Risk Management</span>
+          <span class="topic-chip more">+ plenty more</span>
+        </div>
+
+        <form class="signup reveal-in" style="animation-delay:0.35s" id="waitlistForm">
+          <label for="email" style="position:absolute; left:-9999px;">Email address</label>
+          <input type="email" id="email" name="email" placeholder="your email :)" required autocomplete="email">
+          <button type="submit" class="cta" id="submitBtn">Get early access</button>
+        </form>
+        <p class="microcopy" id="microcopy">Join now and get your first 3 months free when we launch. No credit card, no spam.</p>
+
+        <div class="success" id="successBox" style="display:none;" role="status"></div>
+      </div>
+    </div>
+
+    <div class="ticker-list">
+      <div class="row-item reveal">
+        <span class="icon-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M3 5c2-1 5-1 7 0v14c-2-1-5-1-7 0V5z"/><path d="M21 5c-2-1-5-1-7 0v14c2-1 5-1 7 0V5z"/></svg></span>
+        <div><h4>Start with the fundamentals</h4><p>Short, structured lessons on market structure and price action — the actual foundation your strategy stands on, taught before you ever place a trade.</p></div>
+      </div>
+      <div class="row-item reveal">
+        <span class="icon-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></span>
+        <div><h4>Then practice on real history</h4><p>Step candle-by-candle through real historical market data — crypto, stocks, and futures — thumb-friendly and built for a phone screen.</p></div>
+      </div>
+      <div class="row-item reveal">
+        <span class="icon-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></span>
+        <div><h4>Try it live, risk-free</h4><p>Same engine, real-time prices. Practice position sizing and risk management with a virtual balance — nothing real on the line.</p></div>
+      </div>
+      <div class="row-item reveal">
+        <span class="icon-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+        <div><h4>Your journal, written for you</h4><p>Every trade you close is auto-logged: entry, exit, R:R, and P&amp;L — so you can see what's actually working.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>TradePrep is an educational and simulated-trading tool. Nothing here is financial advice, and no feature involves real money or real securities.</p>
+    <p>&copy; 2026 TradePrep. <a href="#" id="discordFooterLink">Discord</a></p>
+  </footer>
+</main>
+
+<script>
+  // ---- EDIT THESE TWO VALUES BEFORE SHARING THIS LINK PUBLICLY ----
+  const CONFIG = {
+    formEndpoint: "REPLACE_WITH_YOUR_WAITLIST_ENDPOINT",
+    discordInvite: "REPLACE_WITH_YOUR_DISCORD_INVITE_URL"
+  };
+  document.getElementById('discordFooterLink').href = CONFIG.discordInvite;
+
+  // Reveal feature rows as they scroll into view
+  (function revealOnScroll() {
+    const items = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) { items.forEach(function(el){ el.classList.add('in-view'); }); return; }
+    const io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry, i) {
+        if (entry.isIntersecting) {
+          setTimeout(function(){ entry.target.classList.add('in-view'); }, i * 80);
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    items.forEach(function(el){ io.observe(el); });
+  })();
+
+  const form = document.getElementById('waitlistForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const successBox = document.getElementById('successBox');
+  const microcopy = document.getElementById('microcopy');
+
+  function showSuccess() {
+    form.style.display = 'none'; microcopy.style.display = 'none'; successBox.style.display = 'block';
+    successBox.innerHTML = `
+      <h3>You're on the list!</h3>
+      <p>Want to talk trading strategy and see behind-the-scenes app designs? Join our exclusive Discord here.</p>
+      <div class="row">
+        <a class="btn-secondary" href="${CONFIG.discordInvite}" target="_blank" rel="noopener">Join the Discord</a>
+        <a class="btn-ghost" href="https://twitter.com/intent/tweet?text=${encodeURIComponent("Just joined the waitlist for TradePrep — practice trading risk-free on your phone before you risk anything real.")}" target="_blank" rel="noopener">Share on X</a>
+      </div>`;
+  }
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    submitBtn.disabled = true; submitBtn.textContent = 'Joining…';
+    try {
+      if (CONFIG.formEndpoint.startsWith('REPLACE_WITH')) {
+        try {
+          const list = JSON.parse(localStorage.getItem('tradeprep_demo_waitlist') || '[]');
+          list.push({ email: email, at: Date.now() });
+          localStorage.setItem('tradeprep_demo_waitlist', JSON.stringify(list));
+        } catch (err) {}
+        await new Promise(function(r){ setTimeout(r, 400); });
+        showSuccess();
+        return;
+      }
+      const res = await fetch(CONFIG.formEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email: email })
+      });
+      if (res.ok) { showSuccess(); } else { throw new Error('Submission failed'); }
+    } catch (err) {
+      submitBtn.disabled = false; submitBtn.textContent = 'Get early access';
+      microcopy.textContent = 'Something went wrong — please try again in a moment.';
+    }
+  });
+</script>
+
+</body>
+</html>
